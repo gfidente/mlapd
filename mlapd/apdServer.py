@@ -2,14 +2,12 @@ import optparse
 import socket
 import asyncore
 import asynchat
-import datactrl.ldap
+import datactrl.ldapmdl
 
 
 VERSION="0.1"
 
-REJECT_ACTION="REJECT Not Authorized"
 RETRY_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
-ACCEPT_ACTION="OK"
 
 class apdChannel(asynchat.async_chat):
     "manage apd channel and launches database query tasks"
@@ -32,15 +30,15 @@ class apdChannel(asynchat.async_chat):
             value = value.strip('\r')
             self.__map[key] = value
         elif data == '\r':
-            #handle_map
-            self.push('action=' + REJECT_ACTION)
+            action = datactrl.ldapmdl.handle_map(self.__map)
+            self.push('action=' + action)
         else:
             self.push('action=' + RETRY_ACTION)
             asynchat.async_chat.handle_close(self)
 
     # Implementation of base class abstract method
     def found_terminator(self):
-        print self.__map
+        pass
 
 
 class apdSocket(asyncore.dispatcher):
