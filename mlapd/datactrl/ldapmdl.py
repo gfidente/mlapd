@@ -1,3 +1,4 @@
+import sys
 import ConfigParser
 import ldap
 
@@ -5,8 +6,9 @@ import ldap
 ACCEPT_ACTION="OK"
 REJECT_ACTION="REJECT Not Authorized"
 
+
 __config = ConfigParser.SafeConfigParser()
-__config.read(["/mnt/hdb8/workspace/mlapd/datactrl/ldapmdl.conf"])
+__config.read([sys.path[0] + "/datactrl/ldapmdl.conf"])
 
 
 def handle_data(map):
