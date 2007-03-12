@@ -1,5 +1,5 @@
 import ConfigParser
-#import ldap
+import ldap
 
 
 ACCEPT_ACTION="OK"
@@ -9,7 +9,7 @@ __config = ConfigParser.SafeConfigParser()
 __config.read(["/mnt/hdb8/workspace/mlapd/datactrl/ldapmdl.conf"])
 
 
-def handle_map(map):
+def handle_data(map):
     sender = map["sender"]
     senderdomain = sender.split("@")[1]
     recipient = map["recipient"]
@@ -20,6 +20,7 @@ def handle_map(map):
     __BINDDN = __config.get("LDAP_SERVER", "BINDDN")
     __BINDPWD = __config.get("LDAP_SERVER", "BINDPWD")
     
-    #lserver = ldap.open(__HOST, __PORT)
+    lserver = ldap.open(__HOST, __PORT)
+    lserver.simple_bind_s(__BINDDN, __BINDPWD)
     
     return REJECT_ACTION

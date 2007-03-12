@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import optparse
 import socket
 import asyncore
@@ -7,7 +9,7 @@ import datactrl.ldapmdl
 
 VERSION="0.1"
 
-RETRY_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
+DEFER_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
 
 class apdChannel(asynchat.async_chat):
     "manage apd channel and launches database query tasks"
@@ -30,10 +32,10 @@ class apdChannel(asynchat.async_chat):
             value = value.strip('\r')
             self.__map[key] = value
         elif data == '\r':
-            action = datactrl.ldapmdl.handle_map(self.__map)
+            action = datactrl.ldapmdl.handle_data(self.__map)
             self.push('action=' + action)
         else:
-            self.push('action=' + RETRY_ACTION)
+            self.push('action=' + DEFER_ACTION)
             asynchat.async_chat.handle_close(self)
 
     # Implementation of base class abstract method
