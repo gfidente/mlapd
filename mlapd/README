@@ -8,6 +8,7 @@ Requirments:
 ------------
 
 * Python ( >= 2.4 )
+* Python-LDAP ( >= 2.2.0 )
 
 Postfix and LDAP are not needed on the server machine where you are going to install MLAPD, but they are needed to made MLAPD working :+)
 
