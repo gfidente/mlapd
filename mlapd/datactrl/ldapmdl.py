@@ -58,7 +58,7 @@ class Modeler:
             sender is the submitter rfc822 address
         """
         
-        listpolicy = __get_list_policy(listname)
+        listpolicy = self.__get_list_policy(listname)
         
         return REJECT_ACTION
     
@@ -75,7 +75,7 @@ class Modeler:
         senderdomain = sender.split("@")[1]
         recipient = map["recipient"]
               
-        return __get_action(recipient, sender)
+        return self.__get_action(recipient, sender)
         
         self.server.unbind()
         

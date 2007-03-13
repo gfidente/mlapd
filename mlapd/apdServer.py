@@ -38,11 +38,11 @@ class apdChannel(asynchat.async_chat):
         elif data == '\r':
             modeler = datactrl.ldapmdl.Modeler()
             self.action = self.action + modeler.handle_data(self.map)
-            self.push(action)
+            self.push(self.action)
             asynchat.async_chat.handle_close(self)
         else:
             self.action = self.action + DEFER_ACTION
-            self.push(action)
+            self.push(self.action)
             asynchat.async_chat.handle_close(self)
 
     # Implementation of base class abstract method
