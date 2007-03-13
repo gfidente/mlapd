@@ -12,7 +12,12 @@ VERSION="0.1"
 DEFER_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
 
 class apdChannel(asynchat.async_chat):
-    "manage apd channel and launches database query tasks"
+    """manage apd channel and launches database query tasks
+    
+    Parameters:
+        conn comes back from an accepted asyncore.dispatcher
+        addr comes back from an accepted asyncore.dispatcher
+    """
     
     def __init__(self, conn, addr):
         asynchat.async_chat.__init__(self, conn)
@@ -44,7 +49,11 @@ class apdChannel(asynchat.async_chat):
 
 
 class apdSocket(asyncore.dispatcher):
-    "bind to localaddr, accept connections and launches apd channels"
+    """bind to localaddr, accept connections and launches apd channels
+    
+    Parameters:
+        localaddr is in the form (interface, port)
+    """
     
     def __init__(self, localaddr):
         asyncore.dispatcher.__init__(self)
