@@ -16,13 +16,12 @@ class apdChannel(asynchat.async_chat):
     
     Parameters:
         conn comes back from an accepted asyncore.dispatcher
-        addr comes back from an accepted asyncore.dispatcher
     """
     
-    def __init__(self, conn, addr):
+    def __init__(self, conn):
         asynchat.async_chat.__init__(self, conn)
-        self.__addr = addr
-        self.__map = {}
+        self.map = {}
+        self.action = "action="
         self.set_terminator('\n')
 
     # Overrides base class for convenience
@@ -35,12 +34,15 @@ class apdChannel(asynchat.async_chat):
             key = data.split('=')[0]
             value = data.split('=')[1]
             value = value.strip('\r')
-            self.__map[key] = value
+            self.map[key] = value
         elif data == '\r':
-            action = datactrl.ldapmdl.handle_data(self.__map)
-            self.push('action=' + action)
+            modeler = datactrl.ldapmdl.Modeler()
+            self.action = self.action + modeler.handle_data(self.map)
+            self.push(action)
+            asynchat.async_chat.handle_close(self)
         else:
-            self.push('action=' + DEFER_ACTION)
+            self.action = self.action + DEFER_ACTION
+            self.push(action)
             asynchat.async_chat.handle_close(self)
 
     # Implementation of base class abstract method
@@ -64,7 +66,7 @@ class apdSocket(asyncore.dispatcher):
 
     def handle_accept(self):
         conn, addr = self.accept()
-        channel = apdChannel(conn, addr)
+        channel = apdChannel(conn)
 
 
 if __name__ == '__main__':

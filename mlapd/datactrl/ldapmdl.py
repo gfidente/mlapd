@@ -3,79 +3,79 @@ import ConfigParser
 import ldap
 
 
-ACCEPT_ACTION="OK"
-DEFER_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
-REJECT_ACTION="REJECT Not Authorized"
+class Modeler:    
+    ACCEPT_ACTION="OK"
+    DEFER_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
+    REJECT_ACTION="REJECT Not Authorized"
 
-
-__config = ConfigParser.SafeConfigParser()
-__config.read([sys.path[0] + "/datactrl/ldapmdl.conf"])
-
-
-def __get_ldap_connection():
-    "Return a connected LDAPObject"
+    def __init__(self):
+        self.config = ConfigParser.SafeConfigParser()
+        self.config.read([sys.path[0] + "/datactrl/ldapmdl.conf"])
     
-    __URL = __config.get("LDAP_SERVER", "URL")
-    __BINDDN = __config.get("LDAP_SERVER", "BINDDN")
-    __BINDPWD = __config.get("LDAP_SERVER", "BINDPWD")
+        self.__URL = self.config.get("LDAP_SERVER", "URL")
+        self.server = ldap.initialize(self.__URL)
+        
+        self.__BINDDN = self.config.get("LDAP_SERVER", "BINDDN")
+        self.__BINDPWD = self.config.get("LDAP_SERVER", "BINDPWD")        
+        if self.__BINDDN != "":
+            self.server.simple_bind(self.__BINDDN, self.__BINDPWD)
+        
+        self.__ROOTDN = self.config.get("LDAP_SERVER", "ROOTDN")
     
-    lserver = ldap.initialize(__URL)
-    lserver.simple_bind(__BINDDN, __BINDPWD)
     
-    return lserver
-
-
-def __get_list_policy(server, listname):
-    """Return the policy used on a list
+    def __get_list_policy(self, listname):
+        """Return the policy used on a list
+        
+        Parameters:
+            listname is the mailing list rfc822 address
+        """
+        
+        config.set("LDAP_DATA", "recipient", listname)
+        
+        baseDN = self.__ROOTDN
+        searchScope = ldap.SCOPE_SUBTREE
+        retrieveAttributes = [self.config.get("LDAP_DATA", "POLICYATTR")]
+        searchFilter = self.config.get("LDAP_DATA", "LISTFILTER")
     
-    Parameters:
-        server is an LDAPObject connected
-        listname is the mailing list rfc822 address
-    """
+        # server.set_option(ldap.sizelimit, 1)
+        results_id = self.server.search(baseDN, searchScope, searchFilter, retrieveAttributes)
+        while True:
+            result_type, result_data = self.server.result(results_id, 0)
+            if (result_data == []):
+                break
+            else:
+                if result_type == ldap.RES_SEARCH_ENTRY:
+                    result_dn, result_set = result_data[0]
+                    for attribute in retrieveAttributes:
+                        return result_set[attribute][0]
+                        
     
-    __config.set("LDAP_DATA", "recipient", listname)
+    def __get_action(self, listname, sender):
+        """Return the action for Postfix!
+        
+        Parameters:
+            listname is the mailing list rfc822 address
+            sender is the submitter rfc822 address
+        """
+        
+        listpolicy = __get_list_policy(listname)
+        
+        return REJECT_ACTION
     
-    baseDN = __config.get("LDAP_SERVER", "ROOTDN")
-    searchScope = ldap.SCOPE_SUBTREE
-    retrieveAttributes = [__config.get("LDAP_DATA", "POLICYATTR")]
-    searchFilter = __config.get("LDAP_DATA", "LISTFILTER")
-
-    # server.set_option(ldap.sizelimit, 1)
-    results_id = server.search(baseDN, searchScope, searchFilter, retrieveAttributes)
-    while True:
-        result_type, result_data = server.result(results_id, 0)
-        if (result_data == []):
-            break
-        else:
-            if result_type == ldap.RES_SEARCH_ENTRY:
-                result_dn, result_set = result_data[0]
-                for attribute in retrieveAttributes:
-                    return result_set[attribute][0]
-                    
-
-def __get_action(server, listname, policy, sender):
-    """Return the action for Postfix!
     
-    Parameters:
-        server is an LDAPObject connected
-        listname is the mailing list rfc822 address
-        policy is the policy used for the list
-        sender is the submitter rfc822 address
-    """
-    
-    return REJECT_ACTION
-
-
-def handle_data(map):
-    sender = map["sender"]
-    senderdomain = sender.split("@")[1]
-    recipient = map["recipient"]
-    
-    server = __get_ldap_connection()
-    
-    listpolicy = __get_list_policy(server, recipient)
-    
-    return __get_action(server, recipient, listpolicy, sender)
-    
-    server.unbind()
-    
+    def handle_data(self, map):
+        """Main method of the modeler,
+        takes a map from the protocol connection and returns the action
+        
+        Parameters:
+            map is of type {key:value} and contains the Postfix data
+        """
+        
+        sender = map["sender"]
+        senderdomain = sender.split("@")[1]
+        recipient = map["recipient"]
+              
+        return __get_action(recipient, sender)
+        
+        self.server.unbind()
+        
