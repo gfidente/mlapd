@@ -20,6 +20,7 @@ class apdChannel(asynchat.async_chat):
     
     def __init__(self, conn):
         asynchat.async_chat.__init__(self, conn)
+        self.buffer = None
         self.map = {}
         self.action = "action="
         self.set_terminator('\n')
@@ -29,13 +30,17 @@ class apdChannel(asynchat.async_chat):
         asynchat.async_chat.push(self, msg + '\n')
 
     # Implementation of base class abstract method
-    def collect_incoming_data(self, data):
-        if data.find('=') != -1:
-            key = data.split('=')[0]
-            value = data.split('=')[1]
-            value = value.strip('\r')
+    def collect_incoming_data(self, data):        
+        self.buffer = data
+
+    # Implementation of base class abstract method
+    def found_terminator(self):
+        if self.buffer != None and self.buffer.find('=') != -1:
+            key = self.buffer.split('=')[0]
+            value = self.buffer.split('=')[1]
             self.map[key] = value
-        elif data == '\r':
+            self.buffer = None
+        elif self.buffer == None and self.map != {}:
             modeler = datactrl.ldapmdl.Modeler()
             self.action = self.action + modeler.handle_data(self.map)
             self.push(self.action)
@@ -44,10 +49,6 @@ class apdChannel(asynchat.async_chat):
             self.action = self.action + DEFER_ACTION
             self.push(self.action)
             asynchat.async_chat.handle_close(self)
-
-    # Implementation of base class abstract method
-    def found_terminator(self):
-        pass
 
 
 class apdSocket(asyncore.dispatcher):
