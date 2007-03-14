@@ -1,15 +1,17 @@
-import sys
+import os.path
 import ConfigParser
 import ldap
 
-ACCEPT_ACTION="OK"
-DEFER_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
-REJECT_ACTION="REJECT Not Authorized"
+ACCEPT_ACTION = "OK"
+DEFER_ACTION = "DEFER_IF_PERMIT Service temporarily unavailable"
+REJECT_ACTION = "REJECT Not Authorized"
+
+CONFIG_FILE = os.path.dirname(__file__) + "/ldapmdl.conf"
 
 class Modeler:    
     def __init__(self):
         self.config = ConfigParser.SafeConfigParser()
-        self.config.read([sys.path[0] + "/datactrl/ldapmdl.conf"])
+        self.config.readfp(open(CONFIG_FILE))
     
         self.__URL = self.config.get("LDAP_SERVER", "URL")
         self.server = ldap.initialize(self.__URL)
@@ -96,13 +98,16 @@ class Modeler:
                 return ACCEPT_ACTION
             else:
                 return REJECT_ACTION
-        elif listpolicy == "filtered":
-            authorized = self.__get_list_authorized(listdn, listname)
-            for email in authorized:
-                if email.find(sender) != -1:
-                    return ACCEPT_ACTION
-                else:
-                    return REJECT_ACTION
+        elif listpolicy == "filter":
+            authorized = False
+            authorized_submitters = self.__get_list_authorized(listdn, listname)
+            for address in authorized_submitters:
+                if address.find(sender) != -1:
+                    authorized = True
+            if authorized:
+                return ACCEPT_ACTION
+            else:
+                return REJECT_ACTION
     
     
     def handle_data(self, map):

@@ -44,6 +44,7 @@ class apdChannel(asynchat.async_chat):
             modeler = datactrl.ldapmdl.Modeler()
             self.action = self.action + modeler.handle_data(self.map)
             self.push(self.action)
+            self.push('')
             asynchat.async_chat.handle_close(self)
         else:
             self.action = self.action + DEFER_ACTION
