@@ -2,38 +2,35 @@ import os.path
 import ConfigParser
 import ldap
 
-ACCEPT_ACTION = "OK"
-DEFER_ACTION = "DEFER_IF_PERMIT Service temporarily unavailable"
-REJECT_ACTION = "REJECT Not Authorized"
 
-CONFIG_FILE = os.path.dirname(__file__) + "/ldapmdl.conf"
+CONFIG_FILE = os.path.dirname(__file__) + "../etc/ldapmodel.conf"
 
 class Modeler:    
+    ACCEPT_ACTION = "OK"
+    DEFER_ACTION = "DEFER_IF_PERMIT Service temporarily unavailable"
+    REJECT_ACTION = "REJECT Not Authorized"
+    
     def __init__(self):
         self.config = ConfigParser.SafeConfigParser()
         self.config.readfp(open(CONFIG_FILE))
     
-        self.__URL = self.config.get("LDAP_SERVER", "URL")
+        __URL = self.config.get("LDAP_SERVER", "URL")
+        
         self.server = ldap.initialize(self.__URL)
         
-        self.__BINDDN = self.config.get("LDAP_SERVER", "BINDDN")
-        self.__BINDPWD = self.config.get("LDAP_SERVER", "BINDPWD")        
-        if self.__BINDDN != "":
-            self.server.simple_bind(self.__BINDDN, self.__BINDPWD)
+        __BINDDN = self.config.get("LDAP_SERVER", "BINDDN")
+        __BINDPWD = self.config.get("LDAP_SERVER", "BINDPWD")        
         
-        self.__ROOTDN = self.config.get("LDAP_SERVER", "ROOTDN")
+        if __BINDDN != "":
+            self.server.simple_bind(__BINDDN, __BINDPWD)
+        
+        self.ROOTDN = self.config.get("LDAP_SERVER", "ROOTDN")
     
     
-    def __get_list_policy(self, listname):
-        """Return the policy used on a list
-        
-        Parameters:
-            listname is the mailing list rfc822 address
-        """
-        
+    def __get_list_policy(self, listname):        
         self.config.set("LDAP_DATA", "recipient", listname)
         
-        baseDN = self.__ROOTDN
+        baseDN = self.ROOTDN
         searchScope = ldap.SCOPE_SUBTREE
         retrieveAttributes = [self.config.get("LDAP_DATA", "POLICYATTR")]
         searchFilter = self.config.get("LDAP_DATA", "LISTFILTER")
@@ -52,13 +49,6 @@ class Modeler:
                         
     
     def __get_list_authorized(self, listdn, listname):
-        """Return a list of authorized addresses
-        
-        Parameters:
-            listdn is the ldapdn of listname
-            listname is the mailing list rfc822 address
-        """
-        
         self.config.set("LDAP_DATA", "recipient", listname)
         
         baseDN = listdn
@@ -66,7 +56,6 @@ class Modeler:
         retrieveAttributes = [self.config.get("LDAP_DATA", "ALLWDATTRIBUTE")]
         searchFilter = self.config.get("LDAP_DATA", "LISTFILTER")
     
-        # server.set_option(ldap.sizelimit, 1)
         results_id = self.server.search(baseDN, searchScope, searchFilter, retrieveAttributes)
         while True:
             result_type, result_data = self.server.result(results_id, 0)
@@ -79,14 +68,7 @@ class Modeler:
                         return result_set[attribute]
 
     
-    def __get_action(self, listname, sender):
-        """Return the action for Postfix!
-        
-        Parameters:
-            listname is the mailing list rfc822 address
-            sender is the submitter rfc822 address
-        """
-        
+    def __get_action(self, listname, sender):        
         listdn, listpolicy = self.__get_list_policy(listname)
         
         if listpolicy == "open":
@@ -111,13 +93,6 @@ class Modeler:
     
     
     def handle_data(self, map):
-        """Main method of the modeler,
-        takes a map from the protocol connection and returns the action
-        
-        Parameters:
-            map is of type {key:value} and contains the Postfix data
-        """
-
         if map.has_key("sender") and map.has_key("recipient"):
             sender = map["sender"]
             senderdomain = sender.split("@")[1]

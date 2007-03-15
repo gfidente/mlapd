@@ -1,39 +1,30 @@
-#!/bin/env python
-
 import optparse
+import logging
 import socket
 import asyncore
 import asynchat
-import ldapmdl
+import ldapmodel
 
 
 VERSION="0.1"
 
-DEFER_ACTION="DEFER_IF_PERMIT Service temporarily unavailable"
-
-class apdChannel(asynchat.async_chat):
-    """manage apd channel and launches database query tasks
+class apdChannel(asynchat.async_chat):    
+    ACTION_PREFIX = "action="
+    DEFER_ACTION = "DEFER_IF_PERMIT Service temporarily unavailable"
     
-    Parameters:
-        conn comes back from an accepted asyncore.dispatcher
-    """
-    
-    def __init__(self, conn):
+    def __init__(self, conn, addr):
         asynchat.async_chat.__init__(self, conn)
         self.buffer = None
         self.map = {}
-        self.action = "action="
         self.set_terminator('\n')
+        logging.info("connection accepted from " + self.addr[0])
 
-    # Overrides base class for convenience
     def push(self, msg):
         asynchat.async_chat.push(self, msg + '\n')
 
-    # Implementation of base class abstract method
     def collect_incoming_data(self, data):        
         self.buffer = data
 
-    # Implementation of base class abstract method
     def found_terminator(self):
         if self.buffer != None and self.buffer.find('=') != -1:
             key = self.buffer.split('=')[0]
@@ -41,24 +32,18 @@ class apdChannel(asynchat.async_chat):
             self.map[key] = value
             self.buffer = None
         elif self.buffer == None and self.map != {}:
-            modeler = ldapmdl.Modeler()
-            self.action = self.action + modeler.handle_data(self.map)
-            self.push(self.action)
+            modeler = ldapmodel.Modeler()
+            action = self.ACTION_PREFIX + modeler.handle_data(self.map)
+            self.push(action)
             self.push('')
             asynchat.async_chat.handle_close(self)
         else:
-            self.action = self.action + DEFER_ACTION
-            self.push(self.action)
+            action = self.ACTION_PREFIX + self.DEFER_ACTION
+            self.push(action)
             asynchat.async_chat.handle_close(self)
 
 
-class apdSocket(asyncore.dispatcher):
-    """bind to localaddr, accept connections and launches apd channels
-    
-    Parameters:
-        localaddr is in the form (interface, port)
-    """
-    
+class apdSocket(asyncore.dispatcher):    
     def __init__(self, localaddr):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,9 +51,10 @@ class apdSocket(asyncore.dispatcher):
         self.bind(localaddr)
         self.listen(5)
 
+
     def handle_accept(self):
         conn, addr = self.accept()
-        channel = apdChannel(conn)
+        channel = apdChannel(conn, addr)
 
 
 if __name__ == '__main__':
@@ -80,8 +66,11 @@ if __name__ == '__main__':
     parser.set_defaults(port=7777)
     options, args = parser.parse_args()
     
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(thread)s %(levelname)s %(message)s', datefmt='%d-%m-%Y, %H:%M:%S')
+    
     localaddr = (options.iface, options.port)
     daemon = apdSocket(localaddr)
+    
     try:
         asyncore.loop()
     except KeyboardInterrupt:
