@@ -4,7 +4,7 @@ import optparse
 import socket
 import asyncore
 import asynchat
-import datactrl.ldapmdl
+import ldapmdl
 
 
 VERSION="0.1"
@@ -41,7 +41,7 @@ class apdChannel(asynchat.async_chat):
             self.map[key] = value
             self.buffer = None
         elif self.buffer == None and self.map != {}:
-            modeler = datactrl.ldapmdl.Modeler()
+            modeler = ldapmdl.Modeler()
             self.action = self.action + modeler.handle_data(self.map)
             self.push(self.action)
             self.push('')
