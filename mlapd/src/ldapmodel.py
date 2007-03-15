@@ -3,20 +3,20 @@ import ConfigParser
 import ldap
 
 
-CONFIG_FILE = os.path.dirname(__file__) + "../etc/ldapmodel.conf"
+CONFIG_FILE = os.path.dirname(__file__) + "/../etc/ldapmodel.conf"
+ACCEPT_ACTION = "OK"
+DEFER_ACTION = "DEFER_IF_PERMIT Service temporarily unavailable"
+REJECT_ACTION = "REJECT Not Authorized"
 
-class Modeler:    
-    ACCEPT_ACTION = "OK"
-    DEFER_ACTION = "DEFER_IF_PERMIT Service temporarily unavailable"
-    REJECT_ACTION = "REJECT Not Authorized"
-    
+
+class Modeler:        
     def __init__(self):
         self.config = ConfigParser.SafeConfigParser()
         self.config.readfp(open(CONFIG_FILE))
     
         __URL = self.config.get("LDAP_SERVER", "URL")
         
-        self.server = ldap.initialize(self.__URL)
+        self.server = ldap.initialize(__URL)
         
         __BINDDN = self.config.get("LDAP_SERVER", "BINDDN")
         __BINDPWD = self.config.get("LDAP_SERVER", "BINDPWD")        
@@ -40,6 +40,7 @@ class Modeler:
         while True:
             result_type, result_data = self.server.result(results_id, 0)
             if (result_data == []):
+                return None, None
                 break
             else:
                 if result_type == ldap.RES_SEARCH_ENTRY:
@@ -48,12 +49,15 @@ class Modeler:
                         return result_dn, result_set[attribute][0]
                         
     
-    def __get_list_authorized(self, listdn, listname):
+    def __get_list_authorized(self, listdn, listname, internals):
         self.config.set("LDAP_DATA", "recipient", listname)
         
         baseDN = listdn
         searchScope = ldap.SCOPE_BASE
-        retrieveAttributes = [self.config.get("LDAP_DATA", "ALLWDATTRIBUTE")]
+        if internals:
+            retrieveAttributes = [self.config.get("LDAP_DATA", "SUBSCRATTRIBUTE")]
+        else:
+            retrieveAttributes = [self.config.get("LDAP_DATA", "ALLWDATTRIBUTE")]
         searchFilter = self.config.get("LDAP_DATA", "LISTFILTER")
     
         results_id = self.server.search(baseDN, searchScope, searchFilter, retrieveAttributes)
@@ -71,25 +75,38 @@ class Modeler:
     def __get_action(self, listname, sender):        
         listdn, listpolicy = self.__get_list_policy(listname)
         
-        if listpolicy == "open":
+        if listdn == None or listpolicy == None:
             return ACCEPT_ACTION
-        elif listpolicy == "domain":
-            senderdomain = sender.split("@")[1]
-            listdomain = listname.split("@")[1]
-            if listdomain == senderdomain :
+        else:
+            if listpolicy == "open":
                 return ACCEPT_ACTION
-            else:
-                return REJECT_ACTION
-        elif listpolicy == "filter":
-            authorized = False
-            authorized_submitters = self.__get_list_authorized(listdn, listname)
-            for address in authorized_submitters:
-                if address.find(sender) != -1:
-                    authorized = True
-            if authorized:
-                return ACCEPT_ACTION
-            else:
-                return REJECT_ACTION
+            elif listpolicy == "domain":
+                senderdomain = sender.split("@")[1]
+                listdomain = listname.split("@")[1]
+                if listdomain == senderdomain :
+                    return ACCEPT_ACTION
+                else:
+                    return REJECT_ACTION
+            elif listpolicy == "filter":
+                authorized = False
+                authorized_submitters = self.__get_list_authorized(listdn, listname, False)
+                for address in authorized_submitters:
+                    if address.find(sender) != -1:
+                        authorized = True
+                if authorized:
+                    return ACCEPT_ACTION
+                else:
+                    return REJECT_ACTION
+            elif listpolicy == "internals":
+                authorized = False
+                authorized_submitters = self.__get_list_authorized(listdn, listname, True)
+                for address in authorized_submitters:
+                    if address.find(sender) != -1:
+                        authorized = True
+                if authorized:
+                    return ACCEPT_ACTION
+                else:
+                    return REJECT_ACTION
     
     
     def handle_data(self, map):
