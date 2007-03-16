@@ -5,6 +5,5 @@
 <pydev_property name="org.python.pydev.PYTHON_PROJECT_VERSION">python 2.4</pydev_property>
 <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
 <path>/mlapd/src</path>
-<path>/mlapd/src</path>
 </pydev_pathproperty>
 </pydev_project>
