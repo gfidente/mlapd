@@ -112,10 +112,8 @@ class Modeler:
     def handle_data(self, map):
         if map.has_key("sender") and map.has_key("recipient"):
             sender = map["sender"]
-            senderdomain = sender.split("@")[1]
             recipient = map["recipient"]
             action = self.__get_action(recipient, sender)
-            self.server.unbind()
             return action
         else:
             return DEFER_ACTION
