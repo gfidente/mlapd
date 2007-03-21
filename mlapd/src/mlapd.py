@@ -45,7 +45,7 @@ class apdChannel(asynchat.async_chat):
                     logging.warning("no useful action found!")
             except:
                 action = self.ACTION_PREFIX + self.DEFER_ACTION
-                logging.error("unexpected modeler error")
+                logging.error("unexpected modeler error, ldap misconfiguration?")
                 #import sys
                 #logging.debug(sys.exc_info())
             logging.debug("replying: " + action)
