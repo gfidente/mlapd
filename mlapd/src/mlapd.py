@@ -6,7 +6,7 @@ import asynchat
 import ldapmodel
 
 
-__version__ = "0.0"
+__version__ = "0.2"
 
 class apdChannel(asynchat.async_chat):    
     ACTION_PREFIX = "action="
@@ -27,14 +27,14 @@ class apdChannel(asynchat.async_chat):
         self.buffer.append(data)
 
     def found_terminator(self):
-        line = self.buffer.pop()
-        line = line.strip('\r')
-        logging.debug("got: " + line)
-        if line != None and line.find('=') != -1:
-            key = line.split('=')[0]
-            value = line.split('=')[1]
-            self.map[key] = value
-        elif line == '' and len(self.map) != 0:
+        if len(self.buffer) is not 0:
+            line = self.buffer.pop()
+            logging.debug("got: " + line)
+            if line.find('=') != -1:
+                key = line.split('=')[0]
+                value = line.split('=')[1]
+                self.map[key] = value
+        elif len(self.map) is not 0:
             try:
                 modeler = ldapmodel.Modeler()
                 result = modeler.handle_data(self.map)
@@ -42,10 +42,12 @@ class apdChannel(asynchat.async_chat):
                     action = self.ACTION_PREFIX + result
                 else:
                     action = self.ACTION_PREFIX + self.ACCEPT_ACTION
-                    logging.warning("not useful action found!")
+                    logging.warning("no useful action found!")
             except:
                 action = self.ACTION_PREFIX + self.DEFER_ACTION
                 logging.error("unexpected modeler error")
+                #import sys
+                #logging.debug(sys.exc_info())
             logging.debug("replying: " + action)
             self.push(action)
             self.push('')
@@ -55,6 +57,7 @@ class apdChannel(asynchat.async_chat):
             action = self.ACTION_PREFIX + self.DEFER_ACTION
             logging.debug("replying: " + action)
             self.push(action)
+            self.push('')
             asynchat.async_chat.handle_close(self)
             logging.info("closing connection")
 

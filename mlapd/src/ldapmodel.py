@@ -35,13 +35,11 @@ class Modeler:
         retrieveAttributes = [self.config.get("LDAP_DATA", "POLICYATTR")]
         searchFilter = self.config.get("LDAP_DATA", "LISTFILTER")
     
-        # server.set_option(ldap.sizelimit, 1)
         results_id = self.server.search(baseDN, searchScope, searchFilter, retrieveAttributes)
         while True:
             result_type, result_data = self.server.result(results_id, 0)
             if (result_data == []):
                 return None, None
-                break
             else:
                 if result_type == ldap.RES_SEARCH_ENTRY:
                     result_dn, result_set = result_data[0]
@@ -64,7 +62,7 @@ class Modeler:
         while True:
             result_type, result_data = self.server.result(results_id, 0)
             if (result_data == []):
-                break
+                return None
             else:
                 if result_type == ldap.RES_SEARCH_ENTRY:
                     result_dn, result_set = result_data[0]
@@ -76,37 +74,37 @@ class Modeler:
         listdn, listpolicy = self.__get_list_policy(listname)
         
         if listdn == None or listpolicy == None:
-            return ACCEPT_ACTION
+            return None
         else:
             if listpolicy == "open":
                 return ACCEPT_ACTION
             elif listpolicy == "domain":
                 senderdomain = sender.split("@")[1]
                 listdomain = listname.split("@")[1]
-                if listdomain == senderdomain :
+                if listdomain == senderdomain:
                     return ACCEPT_ACTION
                 else:
                     return REJECT_ACTION
             elif listpolicy == "filter":
-                authorized = False
                 authorized_submitters = self.__get_list_authorized(listdn, listname, False)
-                for address in authorized_submitters:
-                    if address.find(sender) != -1:
-                        authorized = True
-                if authorized:
-                    return ACCEPT_ACTION
+                if authorized_submitters != None:
+                    addresses = set(authorized_submitters)
+                    if sender in addresses:
+                        return ACCEPT_ACTION
+                    else:
+                        return REJECT_ACTION
                 else:
                     return REJECT_ACTION
             elif listpolicy == "internals":
-                authorized = False
                 authorized_submitters = self.__get_list_authorized(listdn, listname, True)
-                for address in authorized_submitters:
-                    if address.find(sender) != -1:
-                        authorized = True
-                if authorized:
-                    return ACCEPT_ACTION
+                if authorized_submitters != None:
+                    addresses = set(authorized_submitters)
+                    if sender in addresses:
+                        return ACCEPT_ACTION
+                    else:
+                        return REJECT_ACTION
                 else:
-                    return REJECT_ACTION
+                    return DEFER_ACTION
     
     
     def handle_data(self, map):
