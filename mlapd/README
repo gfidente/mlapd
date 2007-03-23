@@ -1,0 +1,19 @@
+About:
+------
+
+MLAPD is a Mailing List manager which uses LDAP to control lists access. It's written in Python and designed to work with Postfix as an Access Policy Delegation daemon.
+
+
+Requirments:
+------------
+
+* Python ( >= 2.4 )
+* Python-LDAP ( >= 2.2.0 )
+
+Postfix and LDAP are not needed on the server machine where you are going to install MLAPD, but they are needed to made MLAPD working :+)
+
+
+Reporting bugs:
+---------------
+
+You can see open issues and submit new bug at: http://code.google.com/p/mlapd/issues/list
