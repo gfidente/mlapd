@@ -1,0 +1,25 @@
+About:
+------
+
+MLAPD is a Mailing List access manager which works as a Policy Access deamon for Postfix and uses LDAP to check for user's rights to post messages. You can find further details on the deployment practices at http://code.google.com/p/mlapd
+
+
+Requirements:
+------------
+
+* Python ( >= 2.4 )
+* Python-LDAP ( >= 2.2.0 )
+
+Postfix and your LDAP daemon can be installed on a remote machine.
+
+
+Support:
+--------
+
+Please use the mailing list at: http://groups.google.com/group/mlapd
+
+
+Reporting bugs:
+---------------
+
+You can check for known bugs or submit new ones at: http://code.google.com/p/mlapd/issues/list

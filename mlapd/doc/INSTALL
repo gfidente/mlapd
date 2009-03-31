@@ -1,0 +1,3 @@
+mlapd simply doesn't really need any kind of installation!
+
+it's a python app, for now you just have to launch the "mlapd" bash script provided in the "bin" directory, that's all
