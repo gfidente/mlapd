@@ -79,20 +79,20 @@ class apdSocket(asyncore.dispatcher):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(thread)s %(levelname)s %(message)s', datefmt='%d-%m-%Y, %H:%M:%S')
-    logging.info("starting version " + __version__)
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(thread)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        
+    usage = "usage: mlapd [options]"
     
-    usage = "usage: %prog [options]"
-    
-    parser = optparse.OptionParser(usage=usage, version="%prog " + __version__)
+    parser = optparse.OptionParser(usage=usage, version="mlapd " + __version__)
     parser.add_option("-p", action="store", type="int", dest="port", help="port where the daemon will listen")
     parser.add_option("-i", action="store", type="string", dest="iface", help="interface where the daemon will listen")
     parser.set_defaults(iface="127.0.0.1")
     parser.set_defaults(port=7777)
     
     options, args = parser.parse_args()
-    
     localaddr = (options.iface, options.port)
+    
+    logging.info("starting mlapd version " + __version__)
     daemon = apdSocket(localaddr)
     
     try:
