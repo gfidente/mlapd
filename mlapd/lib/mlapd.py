@@ -85,9 +85,11 @@ if __name__ == '__main__':
     parser.add_option("-d", action="store_true", dest="debug", help="enables debug output in the logfile")
     parser.add_option("-p", action="store", type="int", dest="port", help="port where the daemon will listen [default: %default]")
     parser.add_option("-i", action="store", type="string", dest="iface", help="interface where the daemon will listen [default: %default]")
+    parser.add_option("-l", action="store", type="string", dest="logfile", help="path to the logfile [default: %default]")
     parser.set_defaults(debug=False)
     parser.set_defaults(iface="127.0.0.1")
     parser.set_defaults(port=7777)
+    parser.set_defaults(logfile="var/log/mlapd.log")
     
     options, args = parser.parse_args()
     localaddr = (options.iface, options.port)
@@ -96,8 +98,13 @@ if __name__ == '__main__':
         loglevel = logging.DEBUG
     else:
         loglevel = logging.INFO
+        
+    try:
+        logging.basicConfig(filename=options.logfile, level=loglevel, format='%(asctime)s %(thread)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    except:
+        print "error encountered while opening the logfile at " + options.logfile
+        print "please make sure the path exists and is writable, continuing without log"
     
-    logging.basicConfig(level=loglevel, format='%(asctime)s %(thread)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     logging.info("starting mlapd version " + __version__)
     daemon = apdSocket(localaddr)
     
