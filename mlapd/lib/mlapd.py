@@ -18,7 +18,7 @@ class apdChannel(asynchat.async_chat):
         self.buffer = []
         self.map = {}
         self.set_terminator('\n')
-        logging.info("connection from " + remoteaddr[0])
+        logging.info("got connection from " + remoteaddr[0])
 
     def push(self, msg):
         asynchat.async_chat.push(self, msg + '\n')
@@ -84,8 +84,8 @@ if __name__ == '__main__':
     usage = "usage: mlapd [options]"
     
     parser = optparse.OptionParser(usage=usage, version="mlapd " + __version__)
-    parser.add_option("-p", action="store", type="int", dest="port", help="port where the daemon will listen")
-    parser.add_option("-i", action="store", type="string", dest="iface", help="interface where the daemon will listen")
+    parser.add_option("-p", action="store", type="int", dest="port", help="port where the daemon will listen [default: %default]")
+    parser.add_option("-i", action="store", type="string", dest="iface", help="interface where the daemon will listen [default: %default]")
     parser.set_defaults(iface="127.0.0.1")
     parser.set_defaults(port=7777)
     
