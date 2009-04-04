@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 ACCEPT_ACTION = "OK"
 DEFER_ACTION = "DEFER_IF_PERMIT Service temporarily unavailable"
 REJECT_ACTION = "REJECT Not Authorized"
@@ -222,7 +224,10 @@ import logging
 import os
 import sys
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
+    mydir = os.path.dirname(__file__)
+    os.chdir(mydir + "/../")
+
     usage = "usage: mlapd [options]"
     cmdline = optparse.OptionParser(usage=usage, version="mlapd " + __version__)
     cmdline.add_option("-d", action="store_true", dest="debug", help="enables debug output in the logfile")
@@ -230,7 +235,7 @@ if __name__ == '__main__':
     cmdline.add_option("-i", action="store", type="string", dest="iface", help="interface where the daemon will listen [default: %default]")
     cmdline.add_option("-l", action="store", type="string", dest="logfile", help="path to the logfile [default: %default]")
     cmdline.add_option("-c", action="store", type="string", dest="configfile", help="path to the configfile [default: %default]")
-    cmdline.add_option("--pid", action="store", type="string", dest="pidfile", help="path to the pidfile [default: %default]")
+    cmdline.add_option("-P", action="store", type="string", dest="pidfile", help="path to the pidfile [default: %default]")
     cmdline.set_defaults(debug=False)
     cmdline.set_defaults(iface="127.0.0.1")
     cmdline.set_defaults(port=7777)
