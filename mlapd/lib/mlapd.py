@@ -128,7 +128,7 @@ class apdChannel(asynchat.async_chat):
         self.line = ''
         self.buffer = []
         self.map = {}
-        self.set_terminator('\r\n')
+        self.set_terminator('\n')
         logging.info("got connection from " + remoteaddr[0])
 
     def push(self, msg):
