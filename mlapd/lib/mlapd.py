@@ -117,8 +117,6 @@ __version__ = "0.3"
 import socket
 import asyncore
 import asynchat
-import optparse
-import logging
 
 class apdChannel(asynchat.async_chat):    
     def __init__(self, conn, remoteaddr):
@@ -182,12 +180,47 @@ class apdSocket(asyncore.dispatcher):
         self.bind(localaddr)
         self.listen(5)
         self.ip, self.port = localaddr
-        logging.info("listening on " + self.ip + ":" + str(self.port))
+        logging.info("started and listening on " + self.ip + ":" + str(self.port))
 
     def handle_accept(self):
         self.conn, self.remoteaddr = self.accept()
         apdChannel(self.conn, self.remoteaddr)
 
+
+# daemonize
+
+import os
+import time
+
+class NullDevice:
+    def write(self, s):
+        pass
+
+def daemonize():
+    if (not os.fork()):
+        # get our own session
+        os.setsid()
+        if (not os.fork()):
+            # hang around till adopted by init
+            ppid = os.getppid()
+            while (ppid != 1):
+                time.sleep(0.5)
+                ppid = os.getppid()
+        else:
+            # time for child to die
+            os._exit(0)
+    else:
+        # wait for child to die and then bail
+        os.wait()
+        os._exit(0)
+        
+
+# initialization
+
+import optparse
+import logging
+import os
+import sys
 
 if __name__ == '__main__':    
     usage = "usage: mlapd [options]"
@@ -197,11 +230,13 @@ if __name__ == '__main__':
     cmdline.add_option("-i", action="store", type="string", dest="iface", help="interface where the daemon will listen [default: %default]")
     cmdline.add_option("-l", action="store", type="string", dest="logfile", help="path to the logfile [default: %default]")
     cmdline.add_option("-c", action="store", type="string", dest="configfile", help="path to the configfile [default: %default]")
+    cmdline.add_option("--pid", action="store", type="string", dest="pidfile", help="path to the pidfile [default: %default]")
     cmdline.set_defaults(debug=False)
     cmdline.set_defaults(iface="127.0.0.1")
     cmdline.set_defaults(port=7777)
     cmdline.set_defaults(logfile="var/log/mlapd.log")
     cmdline.set_defaults(configfile="etc/ldapmodel.conf")
+    cmdline.set_defaults(pidfile="var/run/mlapd.pid")
     options, args = cmdline.parse_args()
     localaddr = (options.iface, options.port)
     if options.debug is False:
@@ -213,10 +248,23 @@ if __name__ == '__main__':
         logging.basicConfig(filename=options.logfile, level=loglevel, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     except:
         logging.basicConfig(level=loglevel, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-        logging.error("error encountered while opening the logfile at " + options.logfile + ", continuing on stdout")
-    
+        logging.error("error while opening the logfile at " + options.logfile + ", continuing on stdout")
+
     apdSocket(localaddr)
+    daemonize()
     
+    try:
+        f = open(options.pidfile, 'w')
+        f.write(str(os.getpid()))
+        f.close()
+    except:
+        logging.error("error while opening the pidfile at " + options.pidfile + ", ensure directory is writable, exiting")
+        os._exit(1)
+
+    sys.stdin.close()
+    sys.stdout = NullDevice()
+    sys.stderr = NullDevice()
+
     try:
         asyncore.loop()
     except KeyboardInterrupt:

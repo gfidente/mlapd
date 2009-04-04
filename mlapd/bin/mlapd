@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 BINPATH=`dirname $0`
-cd $BINPATH/../ && nohup python ./lib/mlapd.py $@ > /dev/null 2&>1
+cd $BINPATH/../ && python ./lib/mlapd.py $@
