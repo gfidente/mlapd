@@ -1,3 +1,5 @@
-mlapd simply doesn't really need any kind of installation!
+MLAPD simply doesn't really need any kind of installation!
 
-it's a python app, for now you just have to launch the "mlapd" bash script provided in the "bin" directory, that's all
+It's a python app, just have to launch the _mlapd.py_ file provided in the _sbin_ directory, that's all
+
+MLAPD will listen (by default) on 127.0.0.1:7777. You can install it on any machine reachable by your Postfix. 
