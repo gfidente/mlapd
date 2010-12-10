@@ -85,20 +85,18 @@ class LdapModel:
                 authorized_submitters = self.__get_list_authorized(listdn, listname, False)
                 if authorized_submitters != None:
                     addresses = set(authorized_submitters)
-                    if sender in addresses:
-                        return ACCEPT_ACTION
-                    else:
-                        return REJECT_ACTION
-                else:
+                    for address in addresses:
+                        if address.lower() == sender.lower():
+                            return ACCEPT_ACTION
                     return REJECT_ACTION
             elif listpolicy == "internals":
                 authorized_submitters = self.__get_list_authorized(listdn, listname, True)
                 if authorized_submitters != None:
                     addresses = set(authorized_submitters)
-                    if sender in addresses:
-                        return ACCEPT_ACTION
-                    else:
-                        return REJECT_ACTION
+                    for address in addresses:
+                        if address.lower() == sender.lower():
+                            return ACCEPT_ACTION
+                    return REJECT_ACTION
                 else:
                     return DEFER_ACTION
     
