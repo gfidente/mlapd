@@ -1,0 +1,17 @@
+# Enable debug output in the logs
+#DEBUG="no"
+
+# IP address to listen upon
+#LISTEN="localhost"
+
+# Port to listen upon
+#PORT="7777"
+
+# Config file
+#CONFIG="/etc/mlapd/ldapmodel.conf"
+
+# PID file
+#PIDFILE="/var/run/mlapd/mlapd.pid"
+
+# Log file
+#LOG="/var/log/mlapd/mlapd.log"

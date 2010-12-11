@@ -1,0 +1,87 @@
+#!/bin/sh
+#
+# Startup script for mlapd
+#
+# chkconfig: - 79 21
+# description: mlapd is an LDAP based mailing list access control manager \
+#              for Postfix
+# processname: mlapd
+# pidfile: /var/run/mlapd.pid
+# config: /etc/mlapd/ldapmodel.conf
+
+# Giulivo Navigante <giulivo.navigante@gmail.com>
+# Mrugesh Karnik <mrugesh@brainfunked.org>
+#
+# 13/05/2010: Updated to use the mlapd user
+#             Fixed an error in the stop function
+#             Added sysconfig for sourcing options
+#             Prettification
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+[ -r /etc/sysconfig/mlapd ] && . /etc/sysconfig/mlapd
+
+PROGNAME=mlapd
+MLAPD=/usr/sbin/$PROGNAME
+
+[ -x $MLAPD ] || exit 1
+
+# Listening address
+LISTEN="${LISTEN:-localhost}"
+# Listening port
+PORT="${PORT:-7777}"
+# PID file
+PIDFILE="${PIDFILE:-/var/run/${PROGNAME}/${PROGNAME}.pid}"
+# Config file
+CONFIG="${CONFIG:-/etc/${PROGNAME}/ldapmodel.conf}"
+# Log file
+LOG="${LOG:-/var/log/${PROGNAME}/${PROGNAME}.log}"
+
+## Building up options
+OPTIONS="-c $CONFIG -P $PIDFILE -l $LOG -i $LISTEN -p $PORT"
+
+# Debugging
+[ "$DEBUG" == yes ] && OPTIONS="$OPTIONS -d"
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+  start)
+        echo -n "Starting $PROGNAME: "
+        daemon --user $PROGNAME $MLAPD $OPTIONS
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROGNAME
+        ;;
+  stop)
+        if test "x`cat $PIDFILE 2>/dev/null`" != x; then
+          echo -n "Shutting down $PROGNAME: "
+          killproc -p $PIDFILE $PROGNAME
+        fi
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROGNAME $PIDFILE
+        ;;
+  status)
+        status -p $PIDFILE $PROGNAME
+        RETVAL=$?
+        ;;
+  restart)
+        $0 stop
+        $0 start
+        RETVAL=$?
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+
+exit $RETVAL
