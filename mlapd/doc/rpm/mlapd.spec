@@ -1,6 +1,6 @@
 # Variables
 %define name mlapd
-%define version 0.3.2
+%define version 0.3.3
 
 # Preamble
 Summary: MLAPD is a Mailing List access manager for Postfix which uses LDAP to check for user's rights to post messages.
