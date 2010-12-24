@@ -112,7 +112,7 @@ class LdapModel:
 
 # mlapd.py
 
-__version__ = "0.3"
+__version__ = "0.3.3"
 
 import socket
 import asyncore
@@ -141,7 +141,7 @@ class apdChannel(asynchat.async_chat):
             logging.debug("parsing: " + self.line)
             if self.line.find('=') != -1:
                 self.key = self.line.split('=')[0]
-                self.value = self.line.split('=')[1]
+                self.value = self.line.split('=', 1)[1]
                 self.map[self.key] = self.value
         elif len(self.map) is not 0:
             try:
