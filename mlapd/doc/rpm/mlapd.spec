@@ -6,12 +6,12 @@
 Summary: MLAPD is a Mailing List access manager for Postfix which uses LDAP to check for user's rights to post messages.
 Name: %{name}
 Version: %{version}
-Release: 1
+Release: 2
 License: GPL
 Group: Applications/Internet
 Packager: Mrugesh Karnik <mrugesh@brainfunked.org>
-URL: http://code.google.com/p/mlapd/
-Source0: http://mlapd.googlecode.com/files/%{name}-%{version}.tar.gz
+URL: http://code.google.com/p/%{name}/
+Source0: http://%{name}.googlecode.com/files/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}/
 BuildArch: noarch
 Requires: python >= 2.4
@@ -53,7 +53,7 @@ cp doc/rpm/mlapd.rc %{buildroot}/etc/init.d/%{name}
 cp doc/rpm/mlapd.sysconfig %{buildroot}/etc/sysconfig/%{name}
 
 # Create directories for pid and log
-mkdir -pv %{buildroot}/var/run/mlapd %{buildroot}/var/log/mlapd
+mkdir -pv %{buildroot}/var/run/%{name} %{buildroot}/var/log/%{name}
 
 %clean
 rm -rf %{buildroot}
@@ -79,10 +79,13 @@ fi
 %attr(755, root, root) /etc/init.d/%{name}
 %config /etc/sysconfig/%{name}
 %config %attr(640, root, %{name}) /etc/%{name}/ldapmodel.conf
-%dir %attr(775, root, %{name}) /var/run/mlapd
-%dir %attr(775, root, %{name}) /var/log/mlapd
+%dir %attr(775, root, %{name}) /var/run/%{name}
+%dir %attr(775, root, %{name}) /var/log/%{name}
+%dir %attr(775, root, %{name}) /etc/%{name}
 
 %changelog
+* Wed Dec 29 2010 Giulivo Navigante <giulivo.navigante@gmail.com> - 0.3.3-2
+- directory /etc/mlapd added to the %dir section in %files
 * Sat Dec 11 2010 Giulivo Navigante <giulivo.navigante@gmail.com> - 0.3.2-1
 - Commited
 * Thu May 13 2010 Mrugesh Karnik <mrugesh@brainfunked.org> - 0.3.1-1
