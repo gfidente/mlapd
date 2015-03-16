@@ -1,7 +1,7 @@
 About:
 ------
 
-MLAPD is a Mailing List access manager which works as a Policy Access deamon for Postfix and uses LDAP to check for user's rights to post messages. You can find further details on the deployment practices at http://code.google.com/p/mlapd
+MLAPD is a Mailing List access manager which works as a Policy Access deamon for Postfix and uses LDAP to check for user's rights to post messages. You can find further details on the deployment practices at https://github.com/gfidente/mlapd
 
 
 Requirements:
@@ -22,4 +22,4 @@ Please use the mailing list at: http://groups.google.com/group/mlapd
 Reporting bugs:
 ---------------
 
-You can check for known bugs or submit new ones at: http://code.google.com/p/mlapd/issues/list
+You can check for known bugs or submit new ones at: https://github.com/gfidente/mlapd/issues

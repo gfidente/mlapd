@@ -155,7 +155,6 @@ class apdChannel(asynchat.async_chat):
             except:
                 self.action = "action=" + DEFER_ACTION
                 logging.error("modeler error, probably due to misconfiguration or data population error")
-                logging.error("please submit a bug at http://code.google.com/p/mlapd/issues if you think it should work")
                 raise
             logging.debug("replying: " + self.action)
             self.push(self.action)

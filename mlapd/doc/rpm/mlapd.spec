@@ -10,8 +10,8 @@ Release: 2
 License: GPL
 Group: Applications/Internet
 Packager: Mrugesh Karnik <mrugesh@brainfunked.org>
-URL: http://code.google.com/p/%{name}/
-Source0: http://%{name}.googlecode.com/files/%{name}-%{version}.tar.gz
+URL: https://github.com/gfidente/%{name}
+Source0: https://github.com/gfidente/%{name}/archive/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}/
 BuildArch: noarch
 Requires: python >= 2.4
