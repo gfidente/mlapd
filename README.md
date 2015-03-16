@@ -14,6 +14,6 @@ There are some deployment details and notes about the integration of MLAPD in th
 
 ### contact ###
 
-This project was recently migrated from Google Code, where it wasn't updated for years. It probably works in a similarily old environment, but it definitely needs some love (and restructuring).
+This project was migrated from Google Code in March 2015, but it wasn't updated for years when there. It probably works in a similarily old environment, but it definitely needs some love (and restructuring).
 
 There is a [mailing list](http://groups.google.com/group/mlapd) you could use and an [issue tracker](https://github.com/gfidente/mlapd/issues) too.
